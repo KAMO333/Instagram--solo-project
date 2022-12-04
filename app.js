@@ -1,71 +1,70 @@
 class App {
-    constructor() {
-      this.posts = [];
-  
-      this.post = {
-        id: cuid(),
-        username: "",
-        caption: "",
-        image: "",
-      };
-  
-      this.$app = document.querySelector("#app");
-      this.$firebaseAuthContainer = document.querySelector(
-        "#firebaseui-auth-container"
-      );
-      this.$authUser = document.querySelector(".auth-user");
-      this.$uploadBtn = document.querySelector(".upload-container");
-      this.$postContainer = document.querySelector(".post-container");
-      this.$filesToUpload = document.querySelector("#files");
-      this.$sendBtn = document.querySelector("#send");
-      this.$progress = document.querySelector("#progress");
-      this.$uploadingBar = document.querySelector("#uploading");
-      this.$captionText = document.querySelector("#caption-text");
-      this.$posts = document.querySelector(".posts");
-      this.$postTime = document.querySelector(".posted-time");
-  
-      this.ui = new firebaseui.auth.AuthUI(auth);
-      this.handleAuth();
-  
-      this.addEventListener();
-  
-      this.displayPost();
-    }
-  
-    handleAuth() {
-      firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-          this.username = user.displayName;
-          this.userId = user.uid;
-          this.redirectToApp();
-        } else {
-          this.redirectToAuth();
-        }
-      });
-    }
-  
-    redirectToApp() {
-      this.$firebaseAuthContainer.style.display = "none";
-      this.$postContainer.style.display = "none";
-      this.$app.style.display = "block";
-      this.fetchPostsFromDB();
-    }
-  
-    redirectToAuth() {
-      this.$firebaseAuthContainer.style.display = "block";
-      this.$app.style.display = "none";
-      this.$postContainer.style.display = "none";
-      this.ui.start("#firebaseui-auth-container", {
-        signInOptions: [
-          firebase.auth.EmailAuthProvider.PROVIDER_ID,
-          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-        ],
-        // Other config options...
-      });
-    }
-  
-    addEventListener() {
-      document.body.addEventListener("click", () => {});
+  constructor() {
+    this.posts = [];
+
+    this.post = {
+      id: cuid(),
+      username: "",
+      caption: "",
+      image: "",
+    };
+
+    this.$app = document.querySelector("#app");
+    this.$firebaseAuthContainer = document.querySelector(
+      "#firebaseui-auth-container"
+    );
+    this.$authUser = document.querySelector(".auth-user");
+    this.$uploadBtn = document.querySelector(".upload-container");
+    this.$postContainer = document.querySelector(".post-container");
+    this.$filesToUpload = document.querySelector("#files");
+    this.$sendBtn = document.querySelector("#send");
+    this.$progress = document.querySelector("#progress");
+    this.$uploadingBar = document.querySelector("#uploading");
+    this.$captionText = document.querySelector("#caption-text");
+    this.$posts = document.querySelector(".posts");
+
+    this.ui = new firebaseui.auth.AuthUI(auth);
+    this.handleAuth();
+
+    this.addEventListener();
+
+    this.displayPost();
+  }
+
+  handleAuth() {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.username = user.displayName;
+        this.userId = user.uid;
+        this.redirectToApp();
+      } else {
+        this.redirectToAuth();
+      }
+    });
+  }
+
+  redirectToApp() {
+    this.$firebaseAuthContainer.style.display = "none";
+    this.$postContainer.style.display = "none";
+    this.$app.style.display = "block";
+    this.fetchPostsFromDB();
+  }
+
+  redirectToAuth() {
+    this.$firebaseAuthContainer.style.display = "block";
+    this.$app.style.display = "none";
+    this.$postContainer.style.display = "none";
+    this.ui.start("#firebaseui-auth-container", {
+      signInOptions: [
+        firebase.auth.EmailAuthProvider.PROVIDER_ID,
+        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+      ],
+      // Other config options...
+    });
+  }
+
+  addEventListener() {
+    document.body.addEventListener("click", () => {
       this.$filesToUpload.addEventListener("change", (event) => {
         this.handleFileChosen(event);
       });
@@ -81,126 +80,122 @@ class App {
       this.$authUser.addEventListener("click", (event) => {
         this.handleLogout(event);
       });
+    });
+  }
+
+  handleLogout() {
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        this.redirectToAuth();
+      })
+      .catch((error) => {
+        console.log("ERROR OCCURED", error);
+      });
+  }
+
+  redirectToPost() {
+    this.$postContainer.style.display = "block";
+    this.$firebaseAuthContainer.style.display = "none";
+    this.$app.style.display = "none";
+  }
+
+  handleFileChosen(event) {
+    this.files = event.target.files;
+    if (this.files.length > 0) {
+      alert("File chosen!");
+    } else {
+      alert("No file chosen!");
     }
-  
-    // handleClick() {
-    //   this.$authUser.addEventListener("click", (event) => {
-  
-    //   });
-    // }
-  
-    handleLogout() {
-      firebase
-        .auth()
-        .signOut()
-        .then(() => {
-          this.redirectToAuth();
+  }
+
+  uploadToFB() {
+    for (let i = 0; i < this.files.length; i++) {
+      const name = this.files[i].name;
+      const upload = storage.ref(name).put(this.files[i]);
+      console.log(this.files);
+      upload
+        .then((snapshot) => {
+          console.log("'Successfully uploaded image");
+          this.progressBar(snapshot);
+          this.getFileUrl(name);
         })
         .catch((error) => {
-          console.log("ERROR OCCURED", error);
+          console.log(error, "Error Loading File Occured");
         });
     }
-  
-    redirectToPost() {
-      this.$postContainer.style.display = "block";
-      this.$firebaseAuthContainer.style.display = "none";
-      this.$app.style.display = "none";
+  }
+
+  progressBar(snapshot) {
+    const percentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    this.$progress.value = percentage;
+    if (percentage) {
+      this.$uploadingBar.innerHTML = `${this.files[0].name} Uploaded`;
     }
-  
-    handleFileChosen(event) {
-      this.files = event.target.files;
-      if (this.files.length > 0) {
-        alert("File chosen!");
-      } else {
-        alert("No file chosen!");
-      }
-    }
-  
-    uploadToFB() {
-      for (let i = 0; i < this.files.length; i++) {
-        const name = this.files[i].name;
-        const upload = storage.ref(name).put(this.files[i]);
-        upload
-          .then((snapshot) => {
-            console.log("'Successfully uploaded image");
-            this.progressBar(snapshot);
-            this.getFileUrl(name);
-          })
-          .catch((error) => {
-            console.log(error, "Error Loading File Occured");
-          });
-      }
-    }
-  
-    progressBar(snapshot) {
-      const percentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      this.$progress.value = percentage;
-      if (percentage) {
-        this.$uploadingBar.innerHTML = `${this.files[0].name} Uploaded`;
-      }
-    }
-    getFileUrl(name) {
-      const imageRef = storage.ref(name);
-      imageRef
-        .getDownloadURL()
-        .then((url) => {
-          (this.post.image = url), this.posts.push(this.post);
-          console.log(this.post.image);
-          this.savePosts();
-        })
-        .catch((error) => {
-          console.log(error, "Error Occured");
-        });
-    }
-  
-    fetchPostsFromDB() {
-      var docRef = db.collection("users").doc(this.userId);
-      docRef
-        .get()
-        .then((doc) => {
-          if (doc.exists) {
-            console.log("Document data:", doc.data().posts);
-            this.posts = doc.data().posts;
-            this.displayPost();
-          } else {
-            // doc.data() will be undefined in this case
-            console.log("No such document!");
-            db.collection("users")
-              .doc(this.userId)
-              .set({
-                posts: this.posts,
-              })
-              .then(() => {
-                console.log("User successfully Created!");
-              })
-              .catch((error) => {
-                console.error("Error writing document: ", error);
-              });
-          }
-        })
-        .catch((error) => {
-          console.log("Error getting document:", error);
-        });
-    }
-    savePosts() {
-      db.collection("users")
-        .doc(this.userId)
-        .set({
-          posts: this.posts,
-        })
-        .then(() => {
-          console.log("Document successfully written!");
-        })
-        .catch((error) => {
-          console.error("Error writing document: ", error);
-        });
-    }
-  
-    displayPost() {
-      this.$posts.innerHTML = this.posts
-        .map(
-          (post) =>
-            `<div class="post" id="${post.id}">
+  }
+  getFileUrl(name) {
+    const imageRef = storage.ref(name);
+    imageRef
+      .getDownloadURL()
+      .then((url) => {
+        (this.post.image = url), this.posts.push(this.post);
+        console.log(this.post.image);
+        this.savePosts();
+      })
+      .catch((error) => {
+        console.log(error, "Error Occured");
+      });
+  }
+
+  fetchPostsFromDB() {
+    var docRef = db.collection("users").doc(this.userId);
+    docRef
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          console.log("Document data:", doc.data().posts);
+          this.posts = doc.data().posts;
+          this.displayPost();
+        } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+          db.collection("users")
+            .doc(this.userId)
+            .set({
+              posts: this.posts,
+            })
+            .then(() => {
+              console.log("User successfully Created!");
+            })
+            .catch((error) => {
+              console.error("Error writing document: ", error);
+            });
+        }
+      })
+      .catch((error) => {
+        console.log("Error getting document:", error);
+      });
+  }
+  savePosts() {
+    db.collection("users")
+      .doc(this.userId)
+      .set({
+        posts: this.posts,
+      })
+      .then(() => {
+        console.log("Document successfully written!");
+      })
+      .catch((error) => {
+        console.error("Error writing document: ", error);
+      });
+  }
+
+  displayPost() {
+    this.$posts.innerHTML = this.posts
+      .map(
+        (post) =>
+          `<div class="post" id="${post.id}">
             <div class="header">
               <div class="profile-area">
                 <div class="post-pic">
@@ -358,9 +353,8 @@ class App {
             
             
             `
-        )
-        .join("");
-    }
+      )
+      .join("");
   }
-  const app = new App();
-  
+}
+const app = new App();
