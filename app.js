@@ -35,7 +35,6 @@ class App {
       if (user) {
         this.username = user.displayName;
         this.userId = user.uid;
-        console.log(this.username)
         this.redirectToApp();
       } else {
         this.redirectToAuth();
