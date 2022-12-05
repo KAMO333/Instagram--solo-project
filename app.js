@@ -4,7 +4,6 @@ class App {
 
     this.post = {
       id: cuid(),
-      username: "",
       caption: "",
       image: "",
     };
@@ -36,6 +35,7 @@ class App {
       if (user) {
         this.username = user.displayName;
         this.userId = user.uid;
+        console.log(this.username)
         this.redirectToApp();
       } else {
         this.redirectToAuth();
@@ -64,22 +64,21 @@ class App {
   }
 
   addEventListener() {
-    document.body.addEventListener("click", () => {
-      this.$filesToUpload.addEventListener("change", (event) => {
-        this.handleFileChosen(event);
-      });
-      this.$captionText.addEventListener("change", (event) => {
-        this.post.caption = event.target.value;
-      });
-      this.$sendBtn.addEventListener("click", (event) => {
-        this.uploadToFB(event);
-      });
-      this.$uploadBtn.addEventListener("click", (event) => {
-        this.redirectToPost(event);
-      });
-      this.$authUser.addEventListener("click", (event) => {
-        this.handleLogout(event);
-      });
+    document.body.addEventListener("click", () => {});
+    this.$filesToUpload.addEventListener("change", (event) => {
+      this.handleFileChosen(event);
+    });
+    this.$captionText.addEventListener("change", (event) => {
+      this.post.caption = event.target.value;
+    });
+    this.$sendBtn.addEventListener("click", (event) => {
+      this.uploadToFB();
+    });
+    this.$uploadBtn.addEventListener("click", (event) => {
+      this.redirectToPost(event);
+    });
+    this.$authUser.addEventListener("click", (event) => {
+      this.handleLogout(event);
     });
   }
 
@@ -114,7 +113,6 @@ class App {
     for (let i = 0; i < this.files.length; i++) {
       const name = this.files[i].name;
       const upload = storage.ref(name).put(this.files[i]);
-      console.log(this.files);
       upload
         .then((snapshot) => {
           console.log("'Successfully uploaded image");
