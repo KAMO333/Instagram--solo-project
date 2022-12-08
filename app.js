@@ -1,11 +1,12 @@
 class App {
   constructor() {
     this.posts = [];
-
+    this.files = []; 
     this.post = {
       id: cuid(),
       caption: "",
       image: "",
+      username: "",
     };
 
     this.$app = document.querySelector("#app");
@@ -21,6 +22,8 @@ class App {
     this.$uploadingBar = document.querySelector("#uploading");
     this.$captionText = document.querySelector("#caption-text");
     this.$posts = document.querySelector(".posts");
+    this.$postTime = document.querySelector(".posted-time");
+  
 
     this.ui = new firebaseui.auth.AuthUI(auth);
     this.handleAuth();
@@ -35,12 +38,16 @@ class App {
       if (user) {
         this.username = user.displayName;
         this.userId = user.uid;
+        this.post.username = user.displayName;
         this.redirectToApp();
       } else {
         this.redirectToAuth();
       }
     });
+
   }
+
+
 
   redirectToApp() {
     this.$firebaseAuthContainer.style.display = "none";
@@ -112,6 +119,7 @@ class App {
     for (let i = 0; i < this.files.length; i++) {
       const name = this.files[i].name;
       const upload = storage.ref(name).put(this.files[i]);
+      console.log(this.files)
       upload
         .then((snapshot) => {
           console.log("'Successfully uploaded image");
@@ -174,6 +182,7 @@ class App {
         console.log("Error getting document:", error);
       });
   }
+
   savePosts() {
     db.collection("users")
       .doc(this.userId)
@@ -204,9 +213,9 @@ class App {
                     src="assets/akhil.png"
                   />
                 </div>
-                <span class="profile-name">${(post, this.username)}</span>
+                <span class="profile-name">${post.username}</span>
               </div>
-              <div class="options" id="${(post, this.id)}">
+              <div class="options" id="${post.id}">
               <button type="button" class="more-btn"> 
               <div
               class="Igw0E rBNOH YBx95 _4EzTm"
@@ -325,9 +334,7 @@ class App {
               </div>
             
               <span class="caption">
-                <span id="cap-username" class="caption-username"><b>${
-                  (post, this.username)
-                }</b></span>
+                <span id="cap-username" class="caption-username"><b>${post.username}</b></span>
                 <span class="caption-text" id="caption-text">
                   ${post.caption}</span
                 >
