@@ -1,12 +1,13 @@
 class App {
   constructor() {
     this.posts = [];
-    this.files = []; 
+    this.files = [];
     this.post = {
       id: cuid(),
       caption: "",
       image: "",
       username: "",
+      timestamp: this.getTimestamp(),
     };
 
     this.$app = document.querySelector("#app");
@@ -23,7 +24,6 @@ class App {
     this.$captionText = document.querySelector("#caption-text");
     this.$posts = document.querySelector(".posts");
     this.$postTime = document.querySelector(".posted-time");
-  
 
     this.ui = new firebaseui.auth.AuthUI(auth);
     this.handleAuth();
@@ -44,10 +44,7 @@ class App {
         this.redirectToAuth();
       }
     });
-
   }
-
-
 
   redirectToApp() {
     this.$firebaseAuthContainer.style.display = "none";
@@ -96,7 +93,7 @@ class App {
         this.redirectToAuth();
       })
       .catch((error) => {
-        console.log("ERROR OCCURED", error);
+        console.log("ERROR OCCURR  ED", error);
       });
   }
 
@@ -119,7 +116,6 @@ class App {
     for (let i = 0; i < this.files.length; i++) {
       const name = this.files[i].name;
       const upload = storage.ref(name).put(this.files[i]);
-      console.log(this.files)
       upload
         .then((snapshot) => {
           console.log("'Successfully uploaded image");
@@ -127,7 +123,7 @@ class App {
           this.getFileUrl(name);
         })
         .catch((error) => {
-          console.log(error, "Error Loading File Occured");
+          console.log(error, "Error Loading File Happend!");
         });
     }
   }
@@ -149,8 +145,14 @@ class App {
         this.savePosts();
       })
       .catch((error) => {
-        console.log(error, "Error Occured");
+        console.log(error, "Error Occurred!");
       });
+  }
+
+  getTimestamp() {
+    const d = new Date();
+    const timestamp = d.getHours() + ":" + d.getUTCMinutes();
+    return timestamp;
   }
 
   fetchPostsFromDB() {
