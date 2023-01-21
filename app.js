@@ -24,7 +24,11 @@ class App {
     this.$captionText = document.querySelector("#caption-text");
     this.$posts = document.querySelector(".posts");
     this.$postTime = document.querySelector(".posted-time");
+    this.$defaultModal = document.querySelector(".default-modal");
+    this.$btnModalOpen = document.querySelector(".options");
+    this.$authModal = document.querySelector(".authenticated-modal");
 
+    console.log(this.$authModal);
     this.ui = new firebaseui.auth.AuthUI(auth);
     this.handleAuth();
 
@@ -67,7 +71,10 @@ class App {
   }
 
   addEventListener() {
-    document.body.addEventListener("click", () => {});
+    document.body.addEventListener("click", (event) => {
+      this.openAuthModal(event);
+      this.closeModal(event);
+    });
     this.$filesToUpload.addEventListener("change", (event) => {
       this.handleFileChosen(event);
     });
@@ -83,6 +90,19 @@ class App {
     this.$authUser.addEventListener("click", (event) => {
       this.handleLogout(event);
     });
+  }
+
+  openAuthModal(event) {
+    const BtnClickedOn = event.target.closest(".options");
+    if (BtnClickedOn) {
+      this.$authModal.style.display = "block";
+    }
+  }
+
+  closeModal(event) {
+    if (event.target == this.$authModal) {
+      this.$authModal.style.display = "none";
+    }
   }
 
   handleLogout() {
@@ -193,6 +213,7 @@ class App {
       })
       .then(() => {
         console.log("Document successfully written!");
+        this.redirectToApp();
       })
       .catch((error) => {
         console.error("Error writing document: ", error);
@@ -356,8 +377,7 @@ class App {
               <a class="post-btn">Post</a>
             </div>
           </div>
-            
-            
+                      
             `
       )
       .join("");
