@@ -3,6 +3,7 @@ class App {
     this.posts = [];
     this.files = [];
     this.selectedOptionsId = "";
+    // POST OBJECT
     this.post = {
       id: cuid(),
       caption: "",
@@ -11,10 +12,13 @@ class App {
       timestamp: this.getTimestamp(),
     };
 
+    // DOM USER INTERFACE
     this.$app = document.querySelector("#app");
     this.$firebaseAuthContainer = document.querySelector(
       "#firebaseui-auth-container"
     );
+
+    // DOM FUNCTIONALITIES
     this.$authUser = document.querySelector(".auth-user");
     this.$uploadBtn = document.querySelector(".upload-container");
     this.$postContainer = document.querySelector(".post-container");
@@ -38,6 +42,7 @@ class App {
     this.displayPost();
   }
 
+  // AUTHENTICATION
   handleAuth() {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
@@ -71,6 +76,7 @@ class App {
     });
   }
 
+  // EVENT LISTENERS
   addEventListener() {
     document.body.addEventListener("click", (event) => {
       this.openModalOnOptions(event);
@@ -94,6 +100,7 @@ class App {
     });
   }
 
+  // MODAL FUNCTIONALITIES
   openModalOnOptions(event) {
     const $selectedOptions = event.target.closest(".options");
     if ($selectedOptions) {
@@ -134,6 +141,7 @@ class App {
     }
   }
 
+  // LOGOUT FUNCTIONALITIES
   handleLogout() {
     firebase
       .auth()
@@ -152,6 +160,7 @@ class App {
     this.$app.style.display = "none";
   }
 
+  // UPLOAD TO DATABASE
   handleFileChosen(event) {
     this.files = event.target.files;
     if (this.files.length > 0) {
@@ -204,6 +213,7 @@ class App {
     return timestamp;
   }
 
+  // FETCH FROM DATABASE
   fetchPostsFromDB() {
     var docRef = db.collection("users").doc(this.userId);
     docRef
@@ -234,6 +244,7 @@ class App {
       });
   }
 
+  // SAVE TO DATABASE
   savePosts() {
     db.collection("users")
       .doc(this.userId)
@@ -249,6 +260,7 @@ class App {
       });
   }
 
+  // DISPLAY FROM DATABASE
   displayPost() {
     this.$posts.innerHTML = this.posts
       .map(
