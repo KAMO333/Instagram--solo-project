@@ -2,6 +2,7 @@ class App {
   constructor() {
     this.posts = [];
     this.files = [];
+    this.selectedOptionsId = "";
     this.post = {
       id: cuid(),
       caption: "",
@@ -28,7 +29,6 @@ class App {
     this.$btnModalOpen = document.querySelector(".options");
     this.$authModal = document.querySelector(".authenticated-modal");
 
-    console.log(this.$authModal);
     this.ui = new firebaseui.auth.AuthUI(auth);
     this.handleAuth();
 
@@ -74,6 +74,8 @@ class App {
     document.body.addEventListener("click", (event) => {
       this.openAuthModal(event);
       this.closeModal(event);
+      this.openDefaultModal(event);
+      this.closeDefaultModal(event);
     });
     this.$filesToUpload.addEventListener("change", (event) => {
       this.handleFileChosen(event);
@@ -96,12 +98,27 @@ class App {
     const BtnClickedOn = event.target.closest(".options");
     if (BtnClickedOn) {
       this.$authModal.style.display = "block";
+    } else {
+      this.openDefaultModal;
+    }
+  }
+
+  openDefaultModal(event) {
+    const BtnClickedOn = event.target.closest(".options");
+    if (BtnClickedOn) {
+      this.$defaultModal.style.display = "block";
     }
   }
 
   closeModal(event) {
     if (event.target == this.$authModal) {
       this.$authModal.style.display = "none";
+    }
+  }
+
+  closeDefaultModal(event) {
+    if (event.target == this.$defaultModal) {
+      this.$defaultModal.style.display = "none";
     }
   }
 
