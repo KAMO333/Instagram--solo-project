@@ -366,7 +366,6 @@ main {
 /* Modal Style Starts */
 
 .default-modal {
-  display: none; /* Hidden by default */
   position: fixed;
   top: 0;
   left: 0;
@@ -399,7 +398,6 @@ main {
 }
 
 .authenticated-modal {
-  display: none;
   position: fixed;
   top: 0;
   left: 0;

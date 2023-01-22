@@ -28,6 +28,8 @@ class App {
     this.$defaultModal = document.querySelector(".default-modal");
     this.$btnModalOpen = document.querySelector(".options");
     this.$authModal = document.querySelector(".authenticated-modal");
+    this.$modalContent = document.querySelector("#auth-modal");
+    console.log(this.$modalContent)
 
     this.ui = new firebaseui.auth.AuthUI(auth);
     this.handleAuth();
@@ -72,9 +74,8 @@ class App {
 
   addEventListener() {
     document.body.addEventListener("click", (event) => {
-      this.openAuthModal(event);
+      this.openModalOnOptions(event);
       this.closeModal(event);
-      this.openDefaultModal(event);
       this.closeDefaultModal(event);
     });
     this.$filesToUpload.addEventListener("change", (event) => {
@@ -94,20 +95,30 @@ class App {
     });
   }
 
-  openAuthModal(event) {
-    const BtnClickedOn = event.target.closest(".options");
-    if (BtnClickedOn) {
-      this.$authModal.style.display = "block";
-    } else {
-      this.openDefaultModal;
+  openModalOnOptions(event) {
+    const $selectedOptions = event.target.closest(".options");
+    if ($selectedOptions) {
+      this.selectedOptionsId = $selectedOptions.id;
+      this.handleModalPop(event);
     }
   }
 
-  openDefaultModal(event) {
-    const BtnClickedOn = event.target.closest(".options");
-    if (BtnClickedOn) {
-      this.$defaultModal.style.display = "block";
+  handleModalPop(event) {
+    const $selectedPost = event.target.closest(".post");
+    // this.selectedOptionsCaption = $selectedPost.children[2].childNodes[3].childNodes[2].nextSibling.innerText;
+    const $postUsername = $selectedPost.children[0].innerText;
+    if ($postUsername.length === this.post.username.length ) {
+      this.openModal();
+    } else {
+      this.openDefaultModal();
     }
+  }
+  openDefaultModal() {
+    this.$defaultModal.style.display = "block";
+  }
+
+  openModal() {
+    this.$authModal.style.display = "block";
   }
 
   closeModal(event) {
