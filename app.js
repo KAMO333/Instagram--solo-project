@@ -3,6 +3,9 @@ class App {
     this.posts = [];
     this.files = [];
     this.selectedOptionsId = "";
+    this.selectedOptionsCaption = "";
+    this.selectedOptionsImage = "";
+    this.indexOfPost = "";
     // POST OBJECT
     this.post = {
       id: cuid(),
@@ -33,6 +36,8 @@ class App {
     this.$btnModalOpen = document.querySelector(".options");
     this.$authModal = document.querySelector(".authenticated-modal");
     this.$modalContent = document.querySelector("#auth-modal");
+    this.$editBtn = document.querySelector("#edit-btn");
+    this.$updateBtn = document.querySelector("#update-post");
 
     this.ui = new firebaseui.auth.AuthUI(auth);
     this.handleAuth();
@@ -46,9 +51,9 @@ class App {
   handleAuth() {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        this.username = user.displayName;
-        this.userId = user.uid;
         this.post.username = user.displayName;
+        console.log(this.post.username);
+        this.userId = user.uid;
         this.redirectToApp();
       } else {
         this.redirectToAuth();
@@ -82,6 +87,7 @@ class App {
       this.openModalOnOptions(event);
       this.closeModal(event);
       this.closeDefaultModal(event);
+      this.handleUpdate(event);
     });
     this.$filesToUpload.addEventListener("change", (event) => {
       this.handleFileChosen(event);
@@ -121,12 +127,10 @@ class App {
   }
   openDefaultModal() {
     this.$defaultModal.style.display = "block";
-    this.$authModal.style.display = "none";
   }
 
   openModal() {
     this.$authModal.style.display = "block";
-    this.$defaultModal.style.display = "none";
   }
 
   closeModal(event) {
@@ -135,11 +139,117 @@ class App {
     }
   }
 
+  closeModalAfterUpdate() {
+    this.$authModal.style.display = "none";
+  }
+
   closeDefaultModal(event) {
     if (event.target == this.$defaultModal) {
       this.$defaultModal.style.display = "none";
     }
   }
+
+  handleUpdate(event) {
+    const isEditBtnClickedOn = this.$editBtn.contains(event.target);
+    const isUpdateBtnClickedOn = this.$updateBtn.contains(event.target);
+    const isInputFileClickedOn = this.$filesToUpload.contains(event.target);
+    if (isEditBtnClickedOn) {
+      this.$app.style.display = "none";
+      this.$postContainer.style.display = "block";
+      this.$updateBtn.style.display = "block";
+      this.$sendBtn.style.display = "none";
+      this.$captionText.value = this.selectedOptionsCaption;
+    } else if (isUpdateBtnClickedOn) {
+      this.fetchImageFromDB();
+    } else if (isInputFileClickedOn) {
+      this.$sendBtn.style.display = "block";
+      this.$updateBtn.style.display = "none";
+      this.uploadToFB();
+      this.deletePost(this.selectedOptionsId);
+    }
+  }
+
+  fetchImageFromDB() {
+    var docRef = db.collection("users").doc(this.userId);
+
+    docRef
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          this.getIndex();
+          console.log(
+            "Document data:",
+            doc.data().posts[this.indexOfPost].image
+          );
+          const fileLink = doc.data().posts[this.indexOfPost].image;
+          this.updatePost(fileLink);
+        } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+        }
+      })
+      .catch((error) => {
+        console.log("Error getting document:", error);
+      });
+  }
+  //  INDEX OF POST
+  getIndex() {
+    const index = this.posts
+      .map((post) => post.id)
+      .indexOf(this.selectedOptionsId);
+    this.indexOfPost = index;
+  }
+
+  updatePost(fileLink) {
+    this.editPost(this.selectedOptionsId, {
+      image: fileLink,
+      caption: this.$captionText.value,
+    });
+    this.$progress.value = "";
+    this.$uploadingBar.innerHTML = "";
+    this.$captionText.value = "";
+    this.redirectToApp();
+  }
+
+  postImage({ image, caption }) {
+    const lowerCaseUsername = this.loginUsername.toLocaleLowerCase();
+    const username = lowerCaseUsername.replace(/\s/g, "");
+    const newPost = {
+      id: cuid(),
+      image,
+      caption,
+      username,
+      timestamp: this.getTimestamp(),
+    };
+    this.posts = [...this.posts, newPost];
+  }
+  getTimestamp() {
+    const d = new Date();
+    const timestamp = d.getHours() + ":" + d.getUTCMinutes();
+    return timestamp;
+  }
+  editPost(id, { image, caption }) {
+    this.posts = this.posts.map((post) => {
+      if (post.id == id) {
+        post.image = image;
+        post.caption = caption;
+      }
+      return post;
+    });
+  }
+  deletePost(id) {
+    this.posts = this.posts.filter((post) => post.id != id);
+  }
+
+  // handleDeletePost(event) {
+  //   const isDeleteBtnClickedOn = this.$unFollow.contains(event.target);
+  //   if (isDeleteBtnClickedOn) {
+  //     this.deletePost(this.selectedOptionsId);
+  //     this.$authModal.classList.remove("open-modal");
+  //   }
+
+  // }
+  // EDIT OF POST
 
   // LOGOUT FUNCTIONALITIES
   handleLogout() {
@@ -207,12 +317,6 @@ class App {
       });
   }
 
-  getTimestamp() {
-    const d = new Date();
-    const timestamp = d.getHours() + ":" + d.getUTCMinutes();
-    return timestamp;
-  }
-
   // FETCH FROM DATABASE
   fetchPostsFromDB() {
     var docRef = db.collection("users").doc(this.userId);
@@ -254,6 +358,7 @@ class App {
       .then(() => {
         console.log("Document successfully written!");
         this.redirectToApp();
+        this.closeModalAfterUpdate();
       })
       .catch((error) => {
         console.error("Error writing document: ", error);
