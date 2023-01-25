@@ -38,6 +38,7 @@ class App {
     this.$modalContent = document.querySelector("#auth-modal");
     this.$editBtn = document.querySelector("#edit-btn");
     this.$updateBtn = document.querySelector("#update-post");
+    this.$deleteBtn = document.querySelector("#delete-post");
 
     this.ui = new firebaseui.auth.AuthUI(auth);
     this.handleAuth();
@@ -52,7 +53,6 @@ class App {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         this.post.username = user.displayName;
-        console.log(this.post.username);
         this.userId = user.uid;
         this.redirectToApp();
       } else {
@@ -117,7 +117,8 @@ class App {
 
   handleModalPop(event) {
     const $selectedPost = event.target.closest(".post");
-    // this.selectedOptionsCaption = $selectedPost.children[2].childNodes[3].childNodes[2].nextSibling.innerText;
+    this.selectedOptionsCaption =
+      $selectedPost.children[2].childNodes[3].childNodes[2].nextSibling.innerText;
     const $postUsername = $selectedPost.children[0].innerText;
     if ($postUsername.length === this.post.username.length) {
       this.openModal();
@@ -241,14 +242,6 @@ class App {
     this.posts = this.posts.filter((post) => post.id != id);
   }
 
-  // handleDeletePost(event) {
-  //   const isDeleteBtnClickedOn = this.$unFollow.contains(event.target);
-  //   if (isDeleteBtnClickedOn) {
-  //     this.deletePost(this.selectedOptionsId);
-  //     this.$authModal.classList.remove("open-modal");
-  //   }
-
-  // }
   // EDIT OF POST
 
   // LOGOUT FUNCTIONALITIES
