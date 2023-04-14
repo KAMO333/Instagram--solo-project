@@ -88,6 +88,7 @@ class App {
       this.closeModal(event);
       this.closeDefaultModal(event);
       this.handleUpdate(event);
+      this.handleDeletePost(event);
     });
     this.$filesToUpload.addEventListener("change", (event) => {
       this.handleFileChosen(event);
@@ -167,6 +168,15 @@ class App {
       this.$updateBtn.style.display = "none";
       this.uploadToFB();
       this.deletePost(this.selectedOptionsId);
+    }
+  }
+
+  handleDeletePost(event) {
+    const isDeleteBtnClickedOn = this.$deleteBtn.contains(event.target);
+    if (isDeleteBtnClickedOn) {
+      this.deletePost(this.selectedOptionsId);
+      this.RemoveFromDB();
+      this.$authModal.style.display = "none";
     }
   }
 
@@ -301,7 +311,8 @@ class App {
     imageRef
       .getDownloadURL()
       .then((url) => {
-        (this.post.image = url), this.posts.push(this.post);
+        (this.post.image = url)
+        this.posts.push(this.post);
         console.log(this.post.image);
         this.savePosts();
       })
@@ -339,6 +350,21 @@ class App {
       .catch((error) => {
         console.log("Error getting document:", error);
       });
+  }
+
+  // DELETING POST FROM DATABASE
+  RemoveFromDB() {
+    var docRef = db.collection("users").doc(this.userId);
+    docRef
+      .delete(this.post.id)
+      .then((doc) => {
+        console.log("file succesfully deleted");
+        location.reload();
+      })
+      .catch((error) => {
+        console.log("Uh-oh, an error occurred!");
+      });
+     
   }
 
   // SAVE TO DATABASE
